@@ -1,0 +1,4 @@
+*.asv
+Analysis/
+Figures/
+paths.mat
