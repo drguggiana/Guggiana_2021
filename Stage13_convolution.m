@@ -1,13 +1,12 @@
-%% Calculate the convolved responses to the different RGC types from Zhou et al based on my stimuli
+%% 0) Calculate the convolved responses to the different RGC types from Zhou et al based on my stimuli
 
 % load the data
 clearvars
 close all
-load('paths.mat')
+Paths
 addpath(genpath(paths(1).main_path))
 
-cluster_path = paths(1).stage3_path;
-fig_path = strcat(paths(1).fig_path,'Convolution\');
+cluster_path = paths(1).clusters_path;
 
 % define the stimulus time
 stim_time = 21:60;
@@ -19,7 +18,6 @@ if contains(data(1).name,'p17')
     cone_color_scheme = [0.5 0 0;0 0.5 0;0 0 0.5;0.5 0 0.5];
     stim_labels = {'Red','Green','Blue','UV'};
 else
-%     color_scheme = distinguishable_colors(6);
     color_scheme = [1 0 0;1 0 1;1 0 0;1 0 1;1 0 0;1 0 1];
     cone_color_scheme = [];
     stim_labels = [];
@@ -27,8 +25,6 @@ end
 % get the number of data sets
 num_data = size(data,2);
 %% Define the stimulus oscillations
-
-close all
 
 % define the number of stimulus frames
 stimulus_frames = 40;
@@ -38,7 +34,6 @@ imaging_framerate = 15.6;
 % get the time vector for the stim period
 time_vector = 1:1/imaging_framerate:stimulus_frames;
 % create the sine
-% filtered = sin(2*pi*0.125*(6:43))';
 stim_sine = 0.5+0.5.*(sin(2*pi.*0.125.*(time_vector)));
 
 % concatenate with the flat edges
@@ -46,13 +41,7 @@ full_stim = cat(2,0.5.*ones(1,20*imaging_framerate),stim_sine,0.5.*ones(1,20*ima
 
 % update the time vector to include the edges
 time_vector = 1:1/imaging_framerate:80;
-
-% normalize to 1-256
-% full_stim = round(full_stim.*255+1);
-
-figure
-plot(full_stim)
-%% Load the projector power
+% Load the projector power
 
 %define the number of power levels
 pow_num = 256;
@@ -63,7 +52,7 @@ led_num = 4;
 led_colors = 'rbmk';
 
 %define the path to the power files
-p_power = 'E:\Behavioral data\Matlab\AF_proc\ColorFishSuite\Analysis\20160729_powermeter';
+p_power = fullfile(paths.param_path, '20160729_powermeter');
 
 %get the files in the selected path
 p_list = dir(p_power);
@@ -109,7 +98,7 @@ for led = 1:led_num
     %define the vector with the x values to fit
     x_vec = (255:-256/length(power_read{led}):0)';
     power_fits{led} = fit(x_vec,power_read{led}...
-    ,'smoothingspline');%,'exclude',[1:5,end-3:end]);
+    ,'smoothingspline');
     
     %for all 256 intensity values
     for pow = 1:pow_num
@@ -119,20 +108,18 @@ for led = 1:led_num
 end
 % normalize the power
 power_vals = normr_1(power_vals,1);
-%% Load the Zhou et al. data
+% Load the Zhou et al. data
 
 % load the Zhou data
-ref_data = load(paths.reference_path);
-%% Get the dorsal retina kernels
+ref_data = load(fullfile(paths.reference_path,'data_1.mat'));
+% Get the dorsal retina kernels
 % isolate the kernels for the color channels
 kernel_matrix = cat(3,ref_data.AK_R_Mat,ref_data.AK_G_Mat,ref_data.AK_B_Mat,ref_data.AK_UV_Mat);
 
 % get only the dorsal retina ones (ventral FOV)
-% dorsal_bool = ref_data.Pos_Mat(:,1)>=1.5&ref_data.Pos_Mat(:,1)<=2.5;
 dorsal_bool = ref_data.Pos_Mat(:,1)>=1&ref_data.Pos_Mat(:,1)<=3;
-% dorsal_bool = ones(size(ref_data.Pos_Mat(:,1),1),1)==1;
 kernel_matrix = kernel_matrix(dorsal_bool,:,:);
-%% Convolve the stimulus with the kernels
+% Convolve the stimulus with the kernels
 
 % allocate memory for the convolved ROIs
 convolved_rois = zeros(size(kernel_matrix,1),size(full_stim,2),size(kernel_matrix,3));
@@ -148,7 +135,7 @@ for roi = 1:roi_number
         convolved_rois(roi,:,stim) = conv(full_stim.*stim_power(stim),kernel_matrix(roi,:,stim),'same');
     end
 end
-%% Downsample the traces
+% Downsample the traces
 
 % get the time points of the original stimulation (basically the frames)
 original_times = 1:80;
@@ -165,16 +152,7 @@ end
 
 % reshape for sPCA
 downsampled_traces = reshape(downsampled_traces,roi_number,[]);
-%% Plot the convolved, downsampled traces
-
-close all
-
-figure
-
-imagesc(sort_traces(normr_1(downsampled_traces,0)))
-colormap(magma)
-colorbar
-%% Get the traces in clustering-ready form for allocation with the GMM
+% Get the traces in clustering-ready form for allocation with the GMM
 
 % save the full traces
 downsample_full = downsampled_traces;
@@ -201,7 +179,7 @@ replicates = 20;
 
 % use the GMM to allocate the Zhou traces
 convolved_clusters = cluster(data(1).GMModel,f_data);
-%% Infer the valid clusters by comparing original and cleaned up idx
+% Infer the valid clusters by comparing original and cleaned up idx
 
 % get only the stimulus period
 conc_trace = data.conc_trace;
@@ -225,22 +203,22 @@ for clu = 1:original_clunum
     idx_LUT(clu,1) = clu;
     idx_LUT(clu,2) = mode(final_idx(original_idx==clu));
 end
-%% Correct the idx for the kernels
+% Correct the idx for the kernels
 
 for roi = 1:roi_number
     convolved_clusters(roi) = idx_LUT(convolved_clusters(roi)==idx_LUT(:,1),2);
 end
-%% Load the Zhou clusters
+% Load the Zhou clusters
 
-kernels_data = load(paths.kernel_cluster_path);
-kernels_idx = kernels_data.clusterOpt_BIC;
+% kernels_data = load(paths.kernel_cluster_path);
+kernels_idx = ref_data.clusterOpt_BIC;
 % get the valid clusters
-kernels_valid = kernels_data.TrueClusIndex_Vec; 
+kernels_valid = ref_data.TrueClusIndex_Vec; 
 % get only the dorsal retina indexes
 kernels_idx = kernels_idx(dorsal_bool);
 % get the number of clusters
 kernel_clunum = length(kernels_valid);
-%% Compare the clusters allocation between Zhou and the present data
+%% 1) Compare the clusters allocation between Zhou and the present data
 
 close all
 
@@ -274,33 +252,16 @@ set(gca,'TickLength',[0 0],'FontSize',15)
 axis equal
 axis tight
 set(gcf,'Color','w')
-
-% create the settings
-fig_set = struct([]);
-
-fig_set(1).fig_path = fig_path;
-fig_set(1).fig_name = strjoin({'Convolution_clusters',data(1).name,'.eps'},'_');
-fig_set(1).fig_size = 4;
-% fig_set(1).fig_size = [5 4.7];
-% fig_set(2).fig_size = [2 4.7];
-% fig_set(3).fig_size = [5 2];
-fig_set(1).colorbar = 1;
-fig_set(1).colorbar_label = '# of ROIs';
-fig_set(1).box = 'on';
-fig_set(1).cmap = cmap;
-
-h = style_figure(gcf,fig_set);
-%% Get the gains
+%% 2) Compare Types
 
 data_copy = data;
 data_copy(1).conc_trace = downsample_full;
 % get the gains
 [delta_norm, qual_res, cross_res] = gain_analysis(data_copy(1),stim_time);
-%% Get the types
+% Get the types
 
 % get the 10th percentile
 zero_threshold = prctile(abs(delta_norm),10,1);
-% zero_threshold = prctile(abs(delta_norm),5,1);
 % zero the values below a threshold
 delta_norm(abs(delta_norm)<zero_threshold&abs(delta_norm)>0) = 0;
 % turn negatives into -1 and positives into 1
@@ -338,17 +299,7 @@ for channel = 1:3
     end
     
 end
-
-% % store the matrix
-% type_cell{datas,1} = pattern;
-% type_cell{datas,2} = pattern_counts./sum(pattern_counts);
-% type_cell{datas,3} = pattern_full;
-
-% % eliminate the patterns with only 1 instance
-% elim_vector = pattern_counts_conv<2;
-% pattern_counts_conv = pattern_counts_conv(~elim_vector);
-% pattern_full_conv = pattern_full_conv(~elim_vector,:,:);
-%% Get the types with the original traces
+% Get the types with the original traces
 
 % calculate the 0 kernels based on the 10SD criterion used in the ref
 % calculate the SD
@@ -399,7 +350,7 @@ for channel = 1:3
     end
     
 end
-%% Match the types based on Zhou et al
+% Match the types based on Zhou et al
 
 % determine the total number of patterns
 total_number = max(size(pattern_full_conv,1),size(pattern_full,1));
@@ -435,20 +386,17 @@ for types = 1:size(conv_counts,1)
     end
     conv_counts(types) = pattern_counts_conv(target);
 end
-%% Compare types
+% Compare types
 close all
 
 % assemble the comparison matrix
 
 % allocate memory for the matrix
-% comparison_matrix = zeros(size(pattern_full_conv,1),size(pattern_full,1));
 comparison_matrix = zeros(size(total_list,1));
 
 % for all the traces
 for roi = 1:roi_number
     % get the row and column
-%     row = find(sort_idx_conv==ic_conv(roi));
-%     col = find(sort_idx==ic(roi));
     row = new_conv_idx(roi);
     col = new_ref_idx(roi);
     comparison_matrix(row,col) = comparison_matrix(row,col) + 1;
@@ -471,36 +419,3 @@ image(permute(total_patterns,[2 1 3]))
 set(gca,'TickLength',[0 0],'XTick',[],'YTick',[])
 
 set(gcf,'Color','w')
-
-
-% create the settings
-fig_set = struct([]);
-
-fig_set(1).fig_path = fig_path;
-fig_set(1).fig_name = strjoin({'Convolution_types',data(1).name,'.eps'},'_');
-fig_set(1).fig_size = [5 4.8];
-fig_set(2).fig_size = [2 4.8];
-fig_set(3).fig_size = [5 2];
-% fig_set(3).colorbar = 1;
-% fig_set(3).colorbar_label = '# of ROIs';
-fig_set(1).box = 'on';
-fig_set(3).cmap = cmap;
-
-h = style_figure(gcf,fig_set);
-
-% generate an independent colorbar
-
-figure
-imagesc((1:256)')
-set(gca,'XTick',[],'YTick',[])
-
-colormap(cmap)
-% create the settings
-fig_set = struct([]);
-
-fig_set(1).fig_path = fig_path;
-fig_set(1).fig_name = strjoin({'Convolution_types_cbar',data(1).name,'.eps'},'_');
-fig_set(1).fig_size = [1 10];
-fig_set(1).box = 'on';
-
-h = style_figure(gcf,fig_set);

@@ -1,4 +1,4 @@
-% Calculate calcium response standard features per color
+%% 0) Calculate calcium response standard features per color
 
 % load the data
 clearvars
@@ -6,7 +6,7 @@ close all
 Paths
 addpath(genpath(paths(1).main_path))
 
-cluster_path = paths(1).stage3_path;
+cluster_path = paths(1).clusters_path;
 
 data = load_clusters(cluster_path);
 % define the color scheme depending on the stimulus type

@@ -1,4 +1,6 @@
 *.asv
 Analysis/
-Figures/
-paths.mat
+
+Subscripts and utilities/external_packages/umap
+Subscripts and utilities/external_packages/util
+Subscripts and utilities/external_packages/SPASM

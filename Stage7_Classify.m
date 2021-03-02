@@ -1,12 +1,11 @@
-% Run a classifier through the data
+%% Run a classifier through the data
 
 clearvars
 close all
-load('paths.mat')
+Paths
 addpath(genpath(paths(1).main_path))
 
-cluster_path = paths(1).stage3_path;
-fig_path = strcat(paths(1).fig_path,'Classify\');
+cluster_path = paths(1).clusters_path;
 
 data = load_clusters(cluster_path);
 %% Train a classifier for each region
@@ -41,7 +40,7 @@ subsample = 2;
 % combine regions
 region_combination = 1;
 %define whether to shuffle labels (for neutral classification)
-shuff_label = 0;
+shuff_label = 1;
 %define the number of classes per color (1,3,5,or 8) (or 10,11 and 12 for the
 %p6p8 data)
 % 14,15,16 is the comparison between the p8 red vs UV , including the p17b only
@@ -72,8 +71,9 @@ set_part = 1;
 redec_num = 1;
 
 % define the number of roi groups to try
-group_vector = [5 10 20 40 80 100 0];
+% group_vector = [5 10 20 40 80 100 0];
 % group_vector = [20 40 80 100 0];
+group_vector = 0;
 
 % get the number of datasets
 num_data = length(data);
@@ -234,44 +234,21 @@ for datas = 1:num_data
                         temp_stimuli_eff = temp_stimuli;
                         
                     else
-%                         % exit if the requested number is higher than
-%                         % available
-%                         if size(temp_stimuli,1) < max(group_vector)
-%                             continue
-%                         end
                         
                         % get the indexes based on weight from the classifier
                         % that uses all of them
                         current_weights = weights{datas,1}{fish,repeat};
                         % sort and get the top n neurons
                         [~,sort_idx] = sort(current_weights);
-                        
-%                         % get the corresponding percentage of neurons
-%                         neuron_perc = length(sort_idx)/100;
-%                         if group == 1
-%                             neuron_idx = sort_idx(1:round(group_vector(group)*neuron_perc));
-%                         else
-%                             neuron_idx = sort_idx(round(group_vector(group-1)*neuron_perc):...
-%                                 round(group_vector(group)*neuron_perc));
-%                         end
-                        
-%                         if group == 1
-                            neuron_idx = sort_idx(1:group_vector(group));
-%                         elseif group_vector(group) == 0
-%                             neuron_idx = sort_idx(group_vector(group-1):end);
-%                         else
-%                             neuron_idx = sort_idx(group_vector(group-1):group_vector(group));
-%                         end
-                        
+
+                        neuron_idx = sort_idx(1:group_vector(group));
+
                         temp_stimuli_eff = temp_stimuli(neuron_idx,:,:);
                     end
-                    % for all the reps
+                    % for all the reps, normalize
                     for reps = 1:rep_num
                         temp_stimuli_eff(:,:,reps) = normr_1(temp_stimuli_eff(:,:,reps),0)-0.5;
                         temp_stimuli_eff(:,:,reps) = temp_stimuli_eff(:,:,reps)./std(temp_stimuli_eff(:,:,reps),0,2);
-                        % zscore per neuron
-    %                     temp_stimuli(:,:,reps) = zscore(temp_stimuli(:,:,reps),0,2);
-    %                     temp_stimuli(:,:,reps) = (temp_stimuli(:,:,reps))./std(temp_stimuli(:,:,reps),0,2);
                     end
 
                     % reshape back
@@ -287,11 +264,9 @@ for datas = 1:num_data
                 empty_class = cellfun(@isempty,fish_classifiers(1,:));
                 if any(empty_class) == 1
                     fprintf(strjoin({'Fish skipped',num2str(sum(empty_class)),'\r\n'},' '));
-%                     fish_classifiers = fish_classifiers(:,~empty_class);
                 end
                 % allocate memory for the average classifier
                 average_classifier = cell(size(fish_classifiers,1),1);
-
 
                 % for all the fields in the cell
                 for field = 1:size(fish_classifiers,1)
@@ -358,9 +333,6 @@ for datas = 1:num_data
         'cluster',num2str(cluster_flag),'.mat'},'_');
     % save the file
     save(fullfile(paths.classifier_path,file_name),'main_str')
-    %% Plot the results
-
-%     Stage7b_plotClassifier
 end
 
 % delete the pool of workers if it exists

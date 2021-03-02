@@ -1,10 +1,10 @@
 %% Define the paths for the project
 
 % type in the root path for the data
-root_path = 'E:\Behavioral data\Matlab\AF_proc\Guggiana_2021';
+root_path = '';
 
 % list of paths
-path_list = {'stage3','param','stage2',...
+path_list = {'clusters','param','rois',...
     'registration','classifier','reference','external'};
 % allocate the structure
 paths = struct([]);
@@ -21,10 +21,10 @@ for path_var = 1:path_number
     % insert the path in the structure
     paths(1).(field) = ...
         fullfile(root_path,'Analysis',path_list{path_var},'\');
-    % check if the folder exists, if not, create it
-    if isfolder(paths(1).(field))==0
-        mkdir(paths(1).(field));
-    end
+%     % check if the folder exists, if not, create it
+%     if isfolder(paths(1).(field))==0
+%         mkdir(paths(1).(field));
+%     end
 end
 
 % add the AF10 and Tectum colors

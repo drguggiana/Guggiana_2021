@@ -12,7 +12,7 @@ rng(3);
 
 %get the folder where the image files are
 tar_path_all = uipickfiles('FilterSpec',...
-    paths(1).stage2_path);
+    paths(1).rois_path);
 
 %get the number of experiments selected
 num_exp = length(tar_path_all);
@@ -376,7 +376,7 @@ for files = 1:num_data
     %% Save the structure
     
     %define the save path
-    save_path = paths(1).stage3_path;
+    save_path = paths(1).clusters_path;
 
     % assemble the file name
     save_clu = strcat(ori_name,'_clusters.mat');

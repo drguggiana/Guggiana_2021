@@ -1,14 +1,13 @@
-%% Simulate seed extraction with seed mixing
+%% 0) Compare main and control datasets
 
-%% Load the seeds from the downsampled data and the extracted data
+% Load the seeds from the downsampled data and the extracted data
 % load the data
 clearvars
 close all
-load('paths.mat')
+Paths
 addpath(genpath(paths(1).main_path))
 
-cluster_path = paths(1).stage3_path;
-fig_path = strcat(paths(1).fig_path,'mixROI\');
+cluster_path = paths(1).clusters_path;
 
 % define the stimulus time
 stim_time = 21:60;
@@ -27,19 +26,7 @@ else
 end
 % get the number of data sets
 num_data = size(data,2);
-% % flip the data is RA or RGC at the bottom
-% if strcmp(data(1).name,'p17b_gc6s')
-%     data = data([2 1]);
-% end
-%% Calculate correlation matrix and sort to look for correspondence
-
-% close all
-% 
-% figure
-% [rho,pval] = corr(data(1).conc_trace',data(2).conc_trace');
-% 
-% imagesc(rho)
-%% Allocate to clusters with GM model and compare
+% Allocate to clusters with GM model and compare
 
 downsampled_traces = data(2).conc_trace;
 
@@ -66,7 +53,7 @@ replicates = 20;
 
 % use the GMM to allocate the downsampled traces
 convolved_clusters = cluster(data(1).GMModel,f_data);
-%% Infer the valid clusters by comparing original and cleaned up idx
+% Infer the valid clusters by comparing original and cleaned up idx
 
 % get only the stim time
 conc_trace = data(1).conc_trace;
@@ -90,12 +77,12 @@ for clu = 1:original_clunum
     idx_LUT(clu,1) = clu;
     idx_LUT(clu,2) = mode(final_idx(original_idx==clu));
 end
-%% Correct the idx for the kernels
+% Correct the idx for the kernels
 
 for roi = 1:roi_number
     convolved_clusters(roi) = idx_LUT(convolved_clusters(roi)==idx_LUT(:,1),2);
 end
-%% Compare the clusters allocation between downsampled and the actual data
+%% 1) Compare the clusters allocation between downsampled and the actual data
 
 close all
 
@@ -106,10 +93,7 @@ cluster_matrix = zeros(data(1).clu_num,data(2).clu_num);
 
 % for all the traces
 for roi = 1:roi_number
-%     % if the Zhou cluster number is not there, skip
-%     if any(kernels_valid,kernels_idx(roi)) == 0
-%         continue
-%     end
+
     % get the row coordinate (local clusters)
     x = convolved_clusters(roi);
     % get the Zhou cluster number
@@ -127,29 +111,10 @@ imagesc(sortrows(cluster_matrix,'descend'))
 cmap = magma(256);
 cmap(1,:) = [1 1 1];
 colormap(cmap)
-% xlabel('Downsampled clusters')
-% ylabel('Main clusters')
+
 set(gcf,'Color','w')
 set(gca,'TickLength',[0 0],'FontSize',15)
-
-% create the settings
-fig_set = struct([]);
-
-fig_set(1).fig_path = fig_path;
-fig_set(1).fig_name = strjoin({'mixROI_clusters',data(1).name,data(2).name,'.eps'},'_');
-fig_set(1).fig_size = 4;
-fig_set(1).LineWidth = 1;
-% fig_set(1).fig_size = [5 4.7];
-% fig_set(2).fig_size = [2 4.7];
-% fig_set(3).fig_size = [5 2];
-fig_set(1).colorbar = 1;
-fig_set(1).colorbar_label = '# of ROIs';
-fig_set(1).box = 'on';
-fig_set(1).cmap = cmap;
-
-h = style_figure(gcf,fig_set);
-
-%% Calculate types and compare
+%% 2) Calculate types and compare
 
 if contains(data(1).name,'p17b')
     
@@ -205,7 +170,6 @@ if contains(data(1).name,'p17b')
         % store the matrix with the sorted values
         type_cell{datas,1} = pattern;
         type_cell{datas,2} = pattern_counts_sort./sum(pattern_counts_sort);
-%         type_cell{datas,2} = pattern_counts_sort;
         type_cell{datas,3} = pattern_full;
         type_cell{datas,4} = sort_idx;
         type_cell{datas,5} = ic;
@@ -219,43 +183,21 @@ if contains(data(1).name,'p17b')
         set(gcf,'Color','w')
         subplot(2,1,2)
         image(permute(pattern_full,[2 1 3]))
-%         hold on
-%         line([1 1],[0 0],'Color','w')
-%         set(gca,'XLim',[-0.2 size(pattern_full,1)])
+
         set(gca,'YScale','linear','XTick',[],'Visible','off')
 
         subplot(2,1,1)
         bar((pattern_counts_sort))
-%         BarPlotBreak(pattern_counts,pattern_counts(2)*1.8,pattern_counts(1)*0.9,'Line',0.6,2)
-%         breakplot(1:length(pattern_counts),pattern_counts,400,1900,'Line')
         set(gca,'YScale','linear','XTick',[],'Visible','off')
-%         break_axis = breakyaxis([400 1900],0.05, 0.1);
         
 
         axis tight
-   
-%         % create the settings
-%         fig_set = struct([]);
-%         
-%         fig_set(1).fig_path = fig_path;
-%         fig_set(1).fig_name = strjoin({'mixROI_types',data(1).name,'.eps'},'_');
-%         fig_set(1).fig_size = [5 4.7];
-%         fig_set(2).fig_size = [2 4.7];
-%         fig_set(3).fig_size = [5 2];
-%         % fig_set(1).colorbar = 1;
-%         % fig_set(1).colorbar_label = '# of ROIs';
-%         fig_set(1).box = 'on';
-%         fig_set(1).cmap = cmap;
-        
-%         h = style_figure(gcf,fig_set);
-        
-        
+             
     end
     %% Plot a single bar plot for type comparison
     close all
     % get the patterns present in the seconda data set that are not in the
     % first
-%     [new_patterns,inew] = setdiff(type_cell{2,1},type_cell{1,1},'rows');
     
     % get the matching indexes for the patterns of 1 wrt 2
     [~,ia,ib] = intersect(type_cell{1,1},type_cell{2,1},'rows','stable');
@@ -299,7 +241,6 @@ if contains(data(1).name,'p17b')
     
     set(gca,'XLim',[-0.15 size(total_counts,1)+0.5])
     set(gca,'YScale','linear','XTick',[],'Visible','off')
-%     axis tight
     
     subplot(3,1,1)
     bar(total_counts(:,1))
@@ -308,50 +249,15 @@ if contains(data(1).name,'p17b')
     axis tight
     % compute the total difference
     disp(sum(abs(total_counts(:,1)-total_counts(:,2))))
-%     middle_point = get(gca,'XLim');
-%     middle_point = (middle_point(2)+middle_point(1))/2;
-%     text(middle_point,0.5,num2str(sum(abs(total_counts(:,1)-total_counts(:,2)))),'FontSize',40)
-
-    %         break_axis = breakyaxis([400 1900],0.05, 0.1);
     
     % get the coordinates of the max and second to max
     [~,max_idx] = sort(total_counts(:,2),'descend');
     subplot(3,1,3)
     bar(total_counts(:,2))
     BarPlotBreak(total_counts(:,2),total_counts(max_idx(2),2)*1.8,total_counts(max_idx(1),2)*0.9,'Line',0.6,2)
-    %         BarPlotBreak(pattern_counts,pattern_counts(2)*1.8,pattern_counts(1)*0.9,'Line',0.6,2)
     set(gca,'YScale','linear','XTick',[],'Visible','off','YDir','reverse')
     
     axis tight
-
-    
-    % create the settings
-    fig_set = struct([]);
-    
-    fig_size = 5;
-    fig_set(1).fig_path = fig_path;
-    fig_set(1).fig_name = strjoin({'mixROI_types',data(1).name,data(2).name,'.eps'},'_');
-    fig_set(1).fig_size = fig_size;
-    fig_set(2).fig_size = fig_size;
-    fig_set(1).painters = 1;
-    fig_set(3).fig_size = fig_size;
-    fig_set(4).fig_size = fig_size;
-    fig_set(5).fig_size = fig_size;
-    fig_set(6).fig_size = fig_size;
-    
-%     fig_set(1).LineWidth = 0.5;
-%     fig_set(2).LineWidth = 0.5;
-%     fig_set(3).LineWidth = 0.5;
-%     fig_set(4).LineWidth = 0.5;
-%     fig_set(5).LineWidth = 0.5;
-%     fig_set(6).LineWidth = 0.5;
-
-    % fig_set(1).colorbar = 1;
-    % fig_set(1).colorbar_label = '# of ROIs';
-%     fig_set(1).box = 'on';
-%     fig_set(3).cmap = cmap;
-    
-    h = style_figure(gcf,fig_set);
     %% Plot the average response (only for delayed dataset)
     
     % select the original p17b datasets plus the delayed one
@@ -373,61 +279,10 @@ if contains(data(1).name,'p17b')
             % get the x axis
             x = 1:size(average_response,2);
             % plot
-%             shadedErrorBar(x,average_response,std_response)
             plot(x,average_response)
             hold on
         end
         
     end
     
-    %% Compare types
-%     close all
-%     
-%     % assemble the comparison matrix
-%     
-%     % allocate memory for the matrix
-%     comparison_matrix = zeros(size(type_cell{1,2},1),size(type_cell{2,2},1));
-%     % for both 
-%     % for all the traces
-%     for roi = 1:roi_number
-%         % get the row and column
-% %         row = find(sort_idx_conv==ic_conv(roi));
-% %         col = find(sort_idx==ic(roi));
-%         row = find(type_cell{1,4}==type_cell{1,5}(roi));
-%         col = find(type_cell{2,4}==type_cell{2,5}(roi));
-%         
-%         comparison_matrix(row,col) = comparison_matrix(row,col) + 1;
-%     end
-%     figure
-%     subplot('Position',[0 0.2 0.2 0.8])
-%     image(type_cell{1,3})
-%     set(gca,'TickLength',[0 0],'XTick',[],'YTick',[])
-%     
-%     subplot('Position',[0.2 0.2 0.8 0.8])
-%     imagesc(((comparison_matrix)))
-%     cmap = magma(256);
-%     cmap(1,:) = [1 1 1];
-%     colormap(gca,cmap)
-%     set(gca,'TickLength',[0 0],'XTick',[],'YTick',[])
-%     subplot('Position',[0.2 0 0.8 0.2])
-%     image(permute(type_cell{2,3},[2 1 3]))
-%     set(gca,'TickLength',[0 0],'XTick',[],'YTick',[])
-%     
-%     set(gcf,'Color','w')
-%     
-%     
-%     % create the settings
-%     fig_set = struct([]);
-%     
-%     fig_set(1).fig_path = fig_path;
-%     fig_set(1).fig_name = strjoin({'mixROI_types',data(1).name,data(2).name,'.eps'},'_');
-%     fig_set(1).fig_size = [5 4.7];
-%     fig_set(2).fig_size = [2 4.7];
-%     fig_set(3).fig_size = [5 2];
-%     % fig_set(1).colorbar = 1;
-%     % fig_set(1).colorbar_label = '# of ROIs';
-%     fig_set(1).box = 'on';
-%     fig_set(3).cmap = cmap;
-%     
-%     h = style_figure(gcf,fig_set);
 end

@@ -1,11 +1,11 @@
-%% Clean up and load data
+%% 0) Clean up and load data
 
 clearvars
 close all
 Paths
 addpath(genpath(paths(1).main_path))
 
-cluster_path = paths(1).stage3_path;
+cluster_path = paths(1).clusters_path;
 
 data = load_clusters(cluster_path);
 % Calculate PCA trajectories

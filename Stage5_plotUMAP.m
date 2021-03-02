@@ -1,9 +1,10 @@
+%% 0) Embed the data with UMAP
 clearvars
 close all
 
 Paths
 addpath(genpath(paths(1).main_path))
-main_path = paths(1).stage3_path;
+main_path = paths(1).clusters_path;
 
 % reset the rng
 rng(1);
