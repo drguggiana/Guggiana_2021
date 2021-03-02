@@ -3,7 +3,8 @@
 ## Requirements
 - MATLAB (the code was written using version R2018b but will most likely work in newer versions)
 - External MATLAB packages
-  - uipickfiles
+  - [SPASM](https://www.jstatsoft.org/article/view/v084i10)
+  - [UMAP](https://de.mathworks.com/matlabcentral/fileexchange/71902-uniform-manifold-approximation-and-projection-umap)
 
 ## General instructions
 Please follow this readme to be able to reproduce the results in the figures of the publication.
@@ -11,12 +12,17 @@ Please follow this readme to be able to reproduce the results in the figures of 
 In brief, the steps are as follows
 
 1. Clone/download this repository into a target folder and create the folder structure
-2. Download the preprocessed ROIs from the [corresponding repository](http://dx.doi.org/10.17632/szj869h34m.1) in Mendeley Data
+2. Download the preprocessed files from the associated Mendeley Data Repository
 3. Run the clustering analysis
 4. Find the desired analyses from the list below and run the indicated code
 
-## 1) Download the repository
-Click on the clone/download button on the right and choose a target folder to download the code to. Afterwards, edit the script Paths.m with the folder where the repository was cloned to (assign it as a string value to the variable root_path). Run the script so the basic folder structure is created. The datasets present are:
+## 1) Download/clone the repository
+Click on the clone/download button on the right and choose a target folder to download the code to (alternatively use git to clone the repository). Afterwards, edit the script Paths.m with the folder where the repository was cloned to (assign it as a string value to the variable root_path). 
+
+## 2) Download the data
+Go to the [Mendeley Data repository](http://dx.doi.org/10.17632/szj869h34m.1) for this publication and download all the data to the main code folder (rest_of_path/Guggiana_2021)
+
+As a reference, the ROI datasets present (found in the rois folder) are:
 
 - p8_gc6s: Tectum data for Figure 4
 - p8_SynG6s: AF10 data for Figure 4
@@ -26,17 +32,14 @@ Click on the clone/download button on the right and choose a target folder to do
 - p17b_h2b6s: RA and Tectum data for Figures S1F and S2F
 - p17bdownsample_gc6s: spatially downsampled RA and Tectum data for Figures S1H and S2G
 
-## 2) Download the data
-Go to the Mendeley Data repository for this publication and download the preprocessed ROIs to the folder Stage2.
-
 ## 3) Cluster the data
-Run the script Stage3_Cluster. Select all the datasets. This will automatically cluster the ROIs as in our publication and generate the files that will be used for most of the subsequent analyses.
+Run the script Stage3_Cluster. Select all the datasets. This will automatically cluster the ROIs as in our publication and generate the files that will be used for most of the subsequent analyses. (this step can take a while so heads up)
 
 ## 4) Find the desired analysis and follow the instructions
-For all scripts, when running them, a pop-up window will prompt selection of the desired datasets. Select the target dataset and then run the cells with the analysis of interest. Listed below are the figure panels corresponding to each script.
+For all scripts, start by running the first cell (cell 0). A pop-up window will prompt selection of the desired datasets. Select the target dataset and then run the cells with the analysis of interest (for example, for Supplementary Figure 1F, one requires the p17b_GC6s and the p17b_H2BGC6s datasets). Listed below are the figure panels corresponding to each script. Also note that Stage10_registration and Stage13_convolution require special downloads, listed in their instructions.
 
 ### Stage4_tracePlotting
-1. 1F, 4C
+1. 1F, 4C, S1F-H middle top
 2. 2D top
 3. 1E
 4. 2C
@@ -51,12 +54,32 @@ For all scripts, when running them, a pop-up window will prompt selection of the
 2. 3G
 3. S3E-F S4C
 
+### Stage7b_plotClassifier
+1. S2J, S2K
+2. 2E
+3. 3H
+4. 3I
+5. 3J, 4G, S1F-H
+
 ### Stage8_Model
 1. S2C
 
 ### Stage9_features
 1. 1H
 2. 1I
+
+### Stage10_registration
+- Download the reference brain and mask database from the [ZBrain website](https://engertlab.fas.harvard.edu/Z-Brain/download)
+- Place the reference brain in Guggiana_2021/Analysis/registration/Reference_brains
+- Convert to tif using ImageJ. Name should be Ref20131120pt14pl2.nrrd.tif
+- Place MaskDatabase.mat in Guggiana_2021/Analysis/registration/Labels_info
+- Run cells 0 AND 1
+
+1. 1G, 4D
+2. 2D_right
+3. 1J, S1D
+4. 1K, 4E
+
 
 ### Stage11_correlation
 1. 3D, S4A
@@ -65,3 +88,14 @@ For all scripts, when running them, a pop-up window will prompt selection of the
 4. S4B
 5. 3E
 6. S2D-E
+
+### Stage13_convolution
+- Download the data from [Zhou et al. 2020](https://datadryad.org/stash/dataset/doi:10.5061/dryad.7sqv9s4pm)
+- Place the files in Guggiana_2021/Analysis/reference
+
+1. S2I
+2. S1C
+
+### Stage14_mixROIs
+1. S2F-H
+2. S1F-H middle bottom
