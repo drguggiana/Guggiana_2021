@@ -257,7 +257,7 @@ set(gcf,'Color','w')
 data_copy = data;
 data_copy(1).conc_trace = downsample_full;
 % get the gains
-[delta_norm, qual_res, cross_res] = gain_analysis(data_copy(1),stim_time);
+[delta_norm, qual_res, cross_res] = gain_analysis(data_copy(1),stim_time,paths.param_path);
 % Get the types
 
 % get the 10th percentile

@@ -109,7 +109,7 @@ for files = 1:num_data
     %% Extract the gains
     if contains(ori_name,'p17b')
         % get the gains
-        [delta_norm, qual_res, cross_res] = gain_analysis(main_str,stim_time);
+        [delta_norm, qual_res, cross_res] = gain_analysis(main_str,stim_time,paths.param_path);
         main_str(1).delta_norm = delta_norm;
         main_str(1).qual_res = qual_res;
         main_str(1).cross_res = cross_res;

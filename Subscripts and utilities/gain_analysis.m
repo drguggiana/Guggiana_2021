@@ -1,4 +1,4 @@
-function [delta_norm, qual_res, cross_res] = gain_analysis(main_str,stim_time)
+function [delta_norm, qual_res, cross_res] = gain_analysis(main_str,stim_time,exc_path)
 
 %% Get the useful variables from the structure
 
@@ -27,13 +27,14 @@ led_num = 4;
 %load the cone excitation matrix
 
 %define the path
-cone_exc_path = 'E:\Behavioral data\Matlab\AF_proc\ColorFishSuite\Analysis\201609019_coneexc';
+% cone_exc_path = 'E:\Behavioral data\Matlab\AF_proc\ColorFishSuite\Analysis\201609019_coneexc';
+cone_exc_path = fullfile(exc_path,'201609019_coneexc');
 
 %if the name is known
-cone_exc_fpath = cone_exc_path;
 cone_exc_name = '20160925T215300_ConeExc.mat';
 %load it (dimensions of cone_exc: CONE, LED, POWER)
-load(fullfile(cone_exc_fpath,cone_exc_name))
+cone_exc = load(fullfile(cone_exc_path,cone_exc_name));
+cone_exc = cone_exc.cone_exc;
 %% threshold the fourier components
 %extract the relevant portion of the fourier components
 curr_four = four_cat(:,5:8);
@@ -72,17 +73,11 @@ for stim = 1:stim_num2
     %load the traces for this stim (just the stimulus portion)
     stim_traces = conc_trace(:,frame_c:frame_c+time_num-1);
     stim_traces = stim_traces(:,stim_time);
-    %         %find the delta max-min intensity swings for each trace
-    %         delta_signals(:,stim) = (max(stim_traces,[],2)-min(stim_traces,[],2));
-    
+
     % use the Fourier assignments as the value to solve for
-            delta_signals(:,stim) = four_cat(:,stim+4);
-    
-%     %use the full swing of the signal
-%     delta_signals(:,stim) = signal_swing(:,stim);
+    delta_signals(:,stim) = four_cat(:,stim+4);
     
     %turn the stimulus to linear form
-    %         lin_stim = reshape(col_info(:,:,1),320,1);
     lin_stim = col_info(:,stim,1);
     lin_stim = lin_stim(stim_time);
     %calculate the cross correlation between stimulus and trace to

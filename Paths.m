@@ -21,10 +21,6 @@ for path_var = 1:path_number
     % insert the path in the structure
     paths(1).(field) = ...
         fullfile(root_path,'Analysis',path_list{path_var},'\');
-%     % check if the folder exists, if not, create it
-%     if isfolder(paths(1).(field))==0
-%         mkdir(paths(1).(field));
-%     end
 end
 
 % add the AF10 and Tectum colors
