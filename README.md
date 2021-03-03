@@ -69,10 +69,6 @@ For all scripts, start by running the first cell (cell 0). A pop-up window will 
 2. 1I
 
 ### Stage10_registration
-- Download the reference brain and mask database from the [ZBrain website](https://engertlab.fas.harvard.edu/Z-Brain/download)
-- Place the reference brain in Guggiana_2021/Analysis/registration/Reference_brains
-- Convert to tif using ImageJ. Name should be Ref20131120pt14pl2.nrrd.tif
-- Place MaskDatabase.mat in Guggiana_2021/Analysis/registration/Labels_info
 - Run cells 0 AND 1
 
 1. 1G, 4D
