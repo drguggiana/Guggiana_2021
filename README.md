@@ -33,10 +33,10 @@ As a reference, the ROI datasets present (found in the rois folder) are:
 - p17bdownsample_gc6s: spatially downsampled RA and Tectum data for Figures S1H and S2G
 
 ## 3) Cluster the data
-Run the script Stage3_Cluster. Select all the datasets. This will automatically cluster the ROIs as in our publication and generate the files that will be used for most of the subsequent analyses. (this step can take a while so heads up)
+Run the script Script0_Cluster. Select all the datasets. This will automatically cluster the ROIs as in our publication and generate the files that will be used for most of the subsequent analyses. (this step can take a while so heads up)
 
 ## 4) Find the desired analysis and follow the instructions
-For all scripts, start by running the first cell (cell 0). A pop-up window will prompt selection of the desired datasets. Select the target dataset and then run the cells with the analysis of interest (for example, for Supplementary Figure 1F, one requires the p17b_gc6s and the p17b_h2b6s datasets). Listed below are the figure panels corresponding to each script. Also note that Stage10_registration and Stage13_convolution require special downloads, listed in their instructions.
+For all scripts, start by running the first cell (cell 0). A pop-up window will prompt selection of the desired datasets. Select the target dataset and then run the cells with the analysis of interest (for example, for Supplementary Figure 1F, one requires the p17b_gc6s and the p17b_h2b6s datasets). Listed below are the figure panels corresponding to each script. Also note that Script9_convolution requires special downloads, listed in their instructions.
 
 ### Script1_tracePlotting
 1. 1F, 4C, S1F-H middle top
@@ -91,6 +91,8 @@ For all scripts, start by running the first cell (cell 0). A pop-up window will 
 ### Script9_convolution
 - Download the data from [Zhou et al. 2020](https://datadryad.org/stash/dataset/doi:10.5061/dryad.7sqv9s4pm)
 - Place the files in Guggiana_2021/Analysis/reference
+- Run RGC_Functional_Clustering_Command_Line.m to generate the data_1.mat file
+- Run Script9_convolution as normal
 
 1. S2I
 2. S1C
